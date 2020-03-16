@@ -43,10 +43,6 @@
 	</select>
 	
 	<update id="changePw">
-		update member set mbpw = #{mbpw} where mbid = #{mbid} 
+		update member set mbpw = #{mbpw} where mbid = #{mbid}
 	</update>
-	
-	
-	
-
 </mapper>

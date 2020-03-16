@@ -12,6 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
 <script type="text/javascript">
 function forgot(){
 	open("forgot.do?command=forgotinfo","","width=600,height=400");
