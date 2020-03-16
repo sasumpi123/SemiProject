@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="calendar">
+
+
+
+	<select id="getCalView" resultType="volunteerDto" parameterType="map">
+		SELECT * FROM VOLUNTEER WHERE SUBSTR(VOLUNTEER_DATE,1,6)= #{yyyyMM} AND CENTER_SEQ = ${center_seq}
+	</select>
+	
+	<insert id="insertCalBoard" parameterType="calendarDto">
+		INSERT INTO VOUNTEER VALUES(#{member_id}, #{volunteer_title}, #{volunteer_content}, #{volunteer_mdate}, 0, SYSDATE)
+	</insert>
+	
+	<insert id="insert" parameterType="volunteerDto">
+		INSERT INTO VOLUNTEER VALUES(VOLUNTEER_SEQUENCE.NEXTVAL,#{center_seq}, #{member_id}, #{volunteer_title}, #{volunteer_content}, #{volunteer_maxvolunteer}, 0, #{volunteer_date})
+	</insert>
+	
+	<select id="selectOne" resultType="volunteerDto" parameterType="map">
+		SELECT * FROM VOLUNTEER WHERE CENTER_SEQ = #{center_seq} AND VOLUNTEER_DATE = #{yyyyMMdd}
+	</select>
+	
+	<select id="count" resultType="int" parameterType="int">
+		SELECT COUNT(*) FROM APPLY WHERE VOLUNTEER_SEQ = #{volunteer_seq}
+	</select>
+	
+	<insert id="applyInsert" parameterType="applyDto">
+		INSERT INTO APPLY VALUES(APPLY_SEQUENCE.NEXTVAL, #{volunteer_seq}, #{member_id}, #{apply_phone}, #{apply_name}, #{apply_email})
+	</insert>
+	
+	<delete id="volunteerDelete" parameterType="int">
+		DELETE FROM VOLUNTEER WHERE VOLUNTEER_SEQ = ${volunteer_seq}
+	</delete>
+	
+</mapper>

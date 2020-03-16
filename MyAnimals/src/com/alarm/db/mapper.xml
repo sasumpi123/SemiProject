@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="alarm">
+
+	<select id="getDate" resultType="alarmDto" parameterType="String">
+		SELECT VOLUNTEER_title, volunteer_date FROM VOLUNTEER where volunteer_seq in (SELECT volunteer_seq FROM apply WHERE MEMBER_ID = #{member_id})
+	</select>
+		
+</mapper>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:f="http://java.sun.com/jsf/core" xml:lang="en">
+<head>
+	<script type="text/javscript" src="emoji.js"></script>
+    <title>Apache Tomcat WebSocket Examples: Chat</title>
+    <style type="text/css"><![CDATA[
+        input#chat {
+            width: 410px
+        }
+
+        #console-container {
+            width: 400px;
+        }
+
+        #console {
+            border: 1px solid #CCCCCC;
+            border-right-color: #999999;
+            border-bottom-color: #999999;
+            height: 170px;
+            overflow-y: scroll;
+            padding: 5px;
+            width: 100%;
+        }
+
+        #console p {
+            padding: 0;
+            margin: 0;
+        }
+        
+        
+        
+
+html, body {
+  padding: 0px;
+  margin: 0px;
+  background:white;
+  font-family: 'Karla', sans-serif;
+  color: #FFF;
+}
+
+h1 {
+  text-align: center; 
+}
+::-webkit-scrollbar{ width: 8px}
+::-webkit-scrollbar-track { background:rgba(255, 255, 255, 0.1); border-radius:0px 2px 2px 0px;}
+::-webkit-scrollbar-thumb { background:rgba(255, 255, 255, 0.5); }
+.container {
+  margin: 20px auto;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  max-width: 600px;
+  background: #f56a6a;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+  animation:flyin 0.75s;
+}
+.container .messages {
+  height: 250px;
+  margin: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  overflow-y: scroll;
+  border-radius: 2px;
+}
+.container .messages .message {
+  padding: 10px;
+  animation:fade 0.25s;
+  border-bottom:1px solid rgba(0, 0, 0, 0.1);
+}
+.container .input {
+  display: flex;
+  margin: 0px 20px 20px 20px;
+}
+.container .input .btn, .container .input .emoji-btn {
+  height: 40px;
+  line-height: 40px;
+  width: 75px;
+  text-align: center;
+  background: #222;
+  border-radius: 2px;
+  margin-left:10px;
+  position:relative;
+  cursor:pointer;
+}
+.container .input .btn:hover{
+  background:#333;
+  cursor:pointer;
+}
+.container .input input {
+  border-radius: 2px;
+  margin-right: 0px;
+  border: none;
+  width: 100%;
+  flex: 1;
+  padding: 0px 20px;
+  background: #222;
+  color: white;
+  font-weight: 600;
+  outline: none;
+}
+@keyframes fade{
+  from{ opacity:0;}
+  to{opacity:1;}
+}
+@keyframes flyin{
+    from{ transform:translateY(400px); opacity:0;}
+    to{ transform:translateY(0px); opacity:1;}
+}
+
+
+#id{
+!important
+	width: 50px;
+}
+        
+    ]]></style>
+    <script type="application/javascript"><![CDATA[
+        "use strict";
+
+        var Chat = {};
+
+		// socket 선언
+        Chat.socket = null;
+
+		// browser에 WebSocket이 있는지 확인 후 있다면 해당 host로 새로운 webSocket객체 생성
+        Chat.connect = (function(host) {
+            if ('WebSocket' in window) {
+                Chat.socket = new WebSocket(host);
+            } else if ('MozWebSocket' in window) {
+                Chat.socket = new MozWebSocket(host);
+            } else {
+                Console.log('Error: WebSocket is not supported by this browser.');
+                return;
+            }
+
+			// socket이 열리면 Console.log 메소드를 통해 메세지창에 문자열을 출력.
+			// 메세지 입력창에 keydown이벤트가 발생하고 해당 리턴값의 keyCode가 13이라면 (엔터입력) 메세지 전송 이벤트를 발생
+            Chat.socket.onopen = function () {
+                Console.log('Info: WebSocket connection opened.');
+                document.getElementById('chat').onkeydown = function(event) {
+                    if (event.keyCode == 13) {
+                        Chat.sendMessage();
+                    }
+                };
+            };
+
+			// keydown이벤트의 값을 null로 지정해서 위의 메세지 전송 이벤트가 발생하지 않게 하고 웹소켓이 닫혔다는 메세지 전송
+            Chat.socket.onclose = function () {
+                document.getElementById('chat').onkeydown = null;
+                Console.log('Info: WebSocket closed.');
+            };
+
+			// 메세지 전송 이벤트가 발생하면 받은 변수의 data를 Console.log()메소드에 전달
+            Chat.socket.onmessage = function (message) {
+                Console.log(message.data);
+            };
+        });
+
+		// 윈도우의 지역 protocol이 http:라면 Chat.socket을 해당 경로로 연결시킨다.	
+        Chat.initialize = function() {
+            if (window.location.protocol == 'http:') {
+                Chat.connect('ws://192.168.110.39:8787/MyAnimals/websocket/chat');
+            } else {
+                Chat.connect('wss://' + window.location.host + '/MyAnimals/websocket/chat');
+            }
+        };
+
+		// socket에서 메세지 보내기 이벤트가 발생하면 메세지 입력창의 value를 가져와 Chat.socket.send()메소드를 이용해
+		// 해당 값이 null이 아니라면 servlet에 보내주고 input의 value를 초기화시켜준다.
+        Chat.sendMessage = (function() {
+        	var id = document.getElementById('id').value;
+            var text = document.getElementById('chat').value;
+            var message = id + ' : ' +text;
+            console.log(id);
+            console.log(text);
+            console.log(message);
+            if (message != '') {
+                Chat.socket.send(message);
+                document.getElementById('chat').value = '';
+            }
+        });
+
+        var Console = {};
+
+		// 내가 리턴받은 message내용을 <p>태그를 사용해 화면에 뿌려주고 만약 6개 이상의 <p>태그가 쌓이면 제일 처음 채팅을 현재 화면에서 지운다.
+		// 메세지를 입력받는 창에 메세지가 6개 이상 쌓이면 스크롤의 Top이 자동으로 변경되고 변경된 수치를 스크롤 Height에 적용해 자동으로 스크롤이 내려가는것 처럼 보인다.
+        Console.log = (function(message) {
+            var console = document.getElementById('message');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.innerHTML = message;
+            console.appendChild(p);
+            while (console.childNodes.length > 6) {
+                console.removeChild(console.firstChild);
+            }
+            console.scrollTop = console.scrollHeight;
+        });
+
+		// Chat.socket의 연결을 지속시켜준다.
+        Chat.initialize();
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Remove elements with "noscript" class - <noscript> is not allowed in XHTML
+            var noscripts = document.getElementsByClassName("noscript");
+            for (var i = 0; i < noscripts.length; i++) {
+                noscripts[i].parentNode.removeChild(noscripts[i]);
+            }
+        }, false);
+
+		function idchk(){
+			if(document.getElementById("id").value == ""){
+				alert("대화명을 입력해주세요");
+				return false;
+			};
+		};
+    ]]></script>
+</head>
+<body>
+<div class="noscript"><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websockets rely on Javascript being enabled. Please enable
+    Javascript and reload this page!</h2></div>
+<!-- <div>
+    <div id="console-container">
+        <div id="console"/>
+    </div>
+    <p>
+    	<input type="text" id="id" placeholder="대화명" value="ADMIN"/>
+        <input type="text" placeholder="type and press enter to chat" id="chat" />
+    </p>
+</div> -->
+
+   <h1>MyAnimals Chat Room</h1>
+   <div class="container">
+      <div class="messages">
+         <div class="message" id="message"/>
+      </div>
+      <div class="input">
+      	 <input type="text" placeholder="대화명" id="id" value=""/>
+         <input type="text" placeholder="Type message here!" id="chat" onchange="idchk()"/>
+         <div class="btn">Send</div>
+      </div>
+   </div>
+
+
+</body>
+</html>

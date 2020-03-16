@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="member">
+
+	<!-- 회원전체정보 -->
+	<select id="selectList" resultType="memberDto">
+	   SELECT * FROM MEMBER ORDER BY MEMBER_DELFLAG, MEMBER_ROLE, MEMBER_ID
+	</select>
+	
+	<!-- 등급이  user 인 회원 검색 -->
+	<select id="selectUser" resultType="memberDto">
+	   SELECT * FROM MEMBER WHERE MEMBER_ROLE = 'USER'
+	</select>
+	
+	<!-- 등급이 center 인 회원 검색 -->
+	<select id="selectCenter" resultType="memberDto">
+	   SELECT * FROM MEMBER WHERE MEMBER_ROLE = 'CENTER'
+	</select>
+	
+	<!-- 등급 조절 -->
+	<update id="updateRole" parameterType="memberDto"  >
+	   UPDATE MEMBER SET MEMBER_ROLE = #{member_role} WHERE MEMBER_ID = #{member_id} 
+	</update>
+	
+    <!-- 로그인 -->
+	<select id="login" parameterType="map" resultType="memberDto">
+		SELECT MEMBER_ID,MEMBER_PW,MEMBER_NAME,MEMBER_BIRTH,MEMBER_EMAIL,MEMBER_GENDER,MEMBER_ADDRESS,MEMBER_ROLE,MEMBER_DELFLAG,MEMBER_REGDATE,MEMBER_PHONE,MEMBER_NICKNAME FROM MEMBER WHERE MEMBER_ID = #{id} AND MEMBER_PW = #{pw}
+	</select>
+	
+	<!-- 회원가입 -->
+	<insert id="regist" parameterType="memberDto">
+	   INSERT INTO MEMBER VALUES(#{member_id},#{member_pw},#{member_name},#{member_birth},#{member_email},#{member_gender},#{member_address},#{member_role},'N',SYSDATE,#{member_phone},#{member_nickname})
+	</insert>
+	
+	<!-- 내정보 -->
+	<select id="selectOne" resultType="memberDto">
+	   SELECT * FROM MEMBER WHERE MEMBER_ID = #{member_id}
+	</select>
+	
+	<!-- 내정보 수정 -->
+	<update id="updateInfo" parameterType="memberDto">
+	   UPDATE MEMBER SET MEMBER_PW = #{member_pw}, MEMBER_NICKNAME = #{member_nickname}, MEMBER_ADDRESS = #{member_address}, MEMBER_PHONE = #{member_phone} WHERE MEMBER_ID = #{member_id}
+	</update>
+	
+	<!-- 계정 탈퇴 -->
+	<update id="delete" parameterType="String">
+	   UPDATE MEMBER SET MEMBER_DELFLAG = 'Y' WHERE MEMBER_ID = #{member_id}
+	</update>
+	
+	<select id="selectOneFindId" resultType="String">
+	   SELECT MEMBER_ID FROM MEMBER WHERE MEMBER_EMAIL = #{member_email}
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<select id="selectOneFindPw" resultType="int" parameterType="map">
+	   SELECT COUNT(*) FROM MEMBER WHERE MEMBER_ID = #{id} AND MEMBER_EMAIL = #{email} 
+	</select>
+	
+	<update id="changePw" parameterType="map" >
+	   UPDATE MEMBER SET MEMBER_PW = #{pw} WHERE MEMBER_ID = #{id}
+	</update>
+	
+	<select id="idChk" parameterType="String" resultType="memberDto">
+		SELECT * FROM MEMBER WHERE MEMBER_ID = #{id}
+	</select>
+	
+	<select id="nicknameChk" parameterType="String" resultType="memberDto">
+		SELECT * FROM MEMBER WHERE MEMBER_NICKNAME = #{nickname}
+	</select>
+	
+	<select id="emailChk" parameterType="String" resultType="memberDto">
+		SELECT * FROM MEMBER WHERE MEMBER_EMAIL = #{email}
+	</select>
+	
+	<!-- center등록 -->
+   <insert id="centerInsert" parameterType="planDto">
+      INSERT INTO CENTER VALUES(CENTERSEQ.NEXTVAL, #{member_id}, #{center_name}, #{center_addr}, #{center_phone}, 37.870073, 126.983225)
+   </insert>
+   
+      <!-- centerSelectOne -->
+   <select id="selecOneCenter" parameterType="String" resultType="planDto">
+      SELECT * FROM CENTER WHERE MEMBER_ID = #{member_id}
+   </select>
+   
+   <!-- 봉사 신청한 사람 list -->
+   <select id="applyList" parameterType="int" resultType="applyDto">
+      SELECT * FROM APPLY WHERE VOLUNTEER_SEQ = #{volunteer_seq}
+   </select>
+   
+   
+   <!-- 등록된 일정 List -->
+   <select id="selectListVolunteer" parameterType="String" resultType="volunteerDto">
+      SELECT * FROM VOLUNTEER WHERE MEMBER_ID = #{member_id}
+   </select>
+
+</mapper>

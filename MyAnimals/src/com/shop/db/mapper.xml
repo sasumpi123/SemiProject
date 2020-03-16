@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="shop">
+
+	<select id="selectShopList" resultType="shopDto">
+		select * from shop order by shop_seq desc
+	</select>
+	
+	<select id="selectShopOne" parameterType="int" resultType="shopDto">
+		select * from shop where shop_seq = #{shop_seq}
+	</select>
+	
+	<insert id="insertShop" parameterType="shopDto">
+		insert into shop values (shopseq.nextval, #{shop_owner}, #{shop_name}, #{shop_kind}, #{shop_price}, #{shop_quantity}, #{shop_content}, #{shop_photo})
+	</insert>
+	
+	<delete id="deleteShop">
+		delete from shop where shop_seq = #{shop_seq}
+	</delete>
+	
+	<update id="updateShop" parameterType="shopDto">
+		update shop set shop_name = #{shop_name}, shop_kind = #{shop_kind}, shop_price=#{shop_price}, shop_quantity=#{shop_quantity}, shop_content=#{shop_content}, shop_photo= #{shop_photo} where shop_seq = #{shop_seq}
+	</update>
+
+	<select id="searchName" parameterType="String" resultType="shopDto">
+		select * from shop where shop_name like  '%'||#{searchContent}||'%' order by shop_seq desc
+	</select>
+	
+
+	<select id="searchKind" parameterType="String" resultType="shopDto">
+		select * from shop where shop_kind like  '%'||#{searchContent}||'%' order by shop_seq desc
+	</select>
+	
+	<update id="updateOrder" parameterType="map" >
+		UPDATE SHOP SET SHOP_QUANTITY = SHOP_QUANTITY - #{opt} WHERE SHOP_SEQ = #{shop_seq}
+	</update>
+	
+	<insert id="insertOrder" parameterType="orderDto">
+		INSERT INTO ORDERLIST VALUES(ORDERLISTSEQ.NEXTVAL ,#{shop_seq} , #{member_id} ,#{order_stuff} , SYSDATE , #{order_content} , #{order_count}, #{order_buymoney})
+	</insert>
+	
+	<select id="selectOrderList" resultType="orderDto">
+		SELECT * FROM ORDERLIST
+	</select>
+
+</mapper>

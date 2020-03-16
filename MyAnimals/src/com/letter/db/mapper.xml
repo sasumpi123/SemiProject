@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="letter">
+	<select id="receiveList" parameterType="string" resultType="letterDto">
+		SELECT * FROM LETTER WHERE MEMBER_TO = #{id} ORDER BY LETTER_SEQ DESC
+	</select>
+	
+	<select id="sendList" parameterType="String" resultType="letterDto">
+		SELECT * FROM LETTER WHERE MEMBER_FROM = #{id} ORDER BY LETTER_SEQ DESC
+	</select>
+	
+	<select id="selectOne" parameterType="map" resultType="letterDto">
+		SELECT * FROM LETTER WHERE MEMBER_TO = #{id} AND LETTER_SEQ = #{seq}
+	</select>
+	
+	<insert id="insert" parameterType="letterDto">
+		INSERT INTO LETTER VALUES (LETTERSEQ.NEXTVAL, #{member_from}, #{member_to}, #{letter_title}, #{letter_content}, SYSDATE, 'N')
+	</insert>
+	
+	<update id="updateRead" parameterType="map">
+		UPDATE LETTER SET LETTER_READ = 'Y' WHERE MEMBER_FROM = #{id} AND LETTER_SEQ = #{seq}
+	</update>
+	
+	<delete id="multiDelete" parameterType="map">
+		DELETE FROM LETTER WHERE MEMBER_TO = #{id} AND LETTER_SEQ IN
+		<foreach collection="seqs" index="index" item="seq" open="(" separator="," close=")">
+			#{seq}
+		</foreach>
+	</delete>
+	
+</mapper>
